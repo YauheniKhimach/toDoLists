@@ -42,7 +42,7 @@ class TodoList extends React.Component {
                 }
             })
         });
-    }
+    };
 
     nextTaskId = 0;
 
@@ -65,13 +65,13 @@ class TodoList extends React.Component {
             tasks: newTasks
         }, () => { this.saveState(); });
 
-    }
+    };
 
     changeFilter = (newFilterValue) => {
         this.setState( {
             filterValue: newFilterValue
         }, () => { this.saveState(); });
-    }
+    };
 
     changeTask = (taskId, obj) => {
         debugger
@@ -87,13 +87,13 @@ class TodoList extends React.Component {
         this.setState({
             tasks: newTasks
         }, () => { this.saveState(); });
-    }
+    };
     changeStatus = (taskId, isDone) => {
         this.changeTask(taskId, {isDone: isDone});
-    }
+    };
     changeTitle = (taskId, title) => {
         this.changeTask(taskId, {title: title});
-    }
+    };
 
     render = () => {
 
@@ -107,7 +107,7 @@ class TodoList extends React.Component {
 
                     <TodoListTasks changeStatus={this.changeStatus }
                                    changeTitle={this.changeTitle }
-                                   tasks={this.state.tasks.filter(t => {
+                                   tasks={this.props.tasks.filter(t => {
                         if (this.state.filterValue === "All") {
                             return true;
                         }

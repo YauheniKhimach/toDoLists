@@ -2,6 +2,7 @@ import React from 'react';
 import './App.css';
 import TodoList from "./TodoList";
 import AddNewItemForm from "./AddNewItemForm";
+import {connect} from "react-redux";
 
 class App extends React.Component {
 
@@ -16,16 +17,16 @@ class App extends React.Component {
         let newTodoList = {
             id: this.nextTodoListId,
             title: title
-        }
-
-        this.setState({todolists: [...this.state.todolists, newTodoList]}, () => {
-            this.saveState();
-        });
+        };
+this.props.addTodolist(newTodoList);
+        // this.setState({todolists: [...this.state.todolists, newTodoList]}, () => {
+        //     this.saveState();
+        // });
 
         this.nextTodoListId++;
 
 
-    }
+    };
 
     componentDidMount() {
         this.restoreState();
@@ -37,7 +38,7 @@ class App extends React.Component {
         let stateAsString = JSON.stringify(this.state);
         // сохраняем нашу строку в localStorage под ключом "our-state"
         localStorage.setItem("todolists-state", stateAsString);
-    }
+    };
 
     restoreState = () => {
         // объявляем наш стейт стартовый
@@ -57,17 +58,17 @@ class App extends React.Component {
                 }
             })
         });
-    }
+    };
 
     render = () => {
-        const todolists = this.state
+        const todolists = this.props
             .todolists
-            .map(tl => <TodoList id={tl.id} title={tl.title}/>)
+            .map(tl => <TodoList id={tl.id} title={tl.title} tasks={tl.tasks}/>);
 
         return (
             <>
                 <div>
-                   <AddNewItemForm addItem={this.addTodoList}/>
+                    <AddNewItemForm addItem={this.addTodoList}/>
                 </div>
                 <div className="App">
                     {todolists}
@@ -77,5 +78,30 @@ class App extends React.Component {
     }
 }
 
-export default App;
+const mapStateToProps = (state) => {
+    return {
+        todolists: state.todolists
+    }
+};
+
+
+
+const mapDispatchToProps = (dispatch) => {
+    return {
+        addTodolist: (newTodolist) => {
+            const action = {
+                type: "ADD-TODOLIST",
+                newTodolist: newTodolist
+            };
+            dispatch(action)
+        },
+        addTask(newTask, todolistId) {
+            const action = {type : "ADD-TASK", newTask, todolistId};
+            dispatch(action);
+        }
+    }
+};
+const ConnectedTodolist = connect(null, mapDispatchToProps)(TodoList);
+const ConnectedApp = connect(mapStateToProps,mapDispatchToProps)(App);
+export default ConnectedApp;
 
