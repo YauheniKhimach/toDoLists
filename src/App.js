@@ -3,6 +3,8 @@ import './App.css';
 import TodoList from "./TodoList";
 import AddNewItemForm from "./AddNewItemForm";
 import {connect} from "react-redux";
+import {ADD_TODOLIST, addTodolistAC, setTodolistsAC} from "./reducer";
+import axios from "axios";
 
 class App extends React.Component {
 
@@ -10,23 +12,25 @@ class App extends React.Component {
 
     state = {
         todolists: []
-    }
+    };
 
     addTodoList = (title) => {
-
-        let newTodoList = {
-            id: this.nextTodoListId,
-            title: title
-        };
-this.props.addTodolist(newTodoList);
-        // this.setState({todolists: [...this.state.todolists, newTodoList]}, () => {
-        //     this.saveState();
-        // });
-
-        this.nextTodoListId++;
-
-
+        axios.post(
+            "https://social-network.samuraijs.com/api/1.0/todo-lists",                // адрес endpoint-а
+            {title: title},                                         // объект, который нужен серваку для совершения действия
+            // настройки запроса
+            {
+                withCredentials: true,                                       // передавай с запросом куки для запрашиваемого домена
+                headers: {"API-KEY": "8cb29b96-1ff9-457a-9229-34cee0202934"} // специальный ключ в заголовках передаём
+            }                                                                // (у каждого свой ключ должен быть)
+        )
+            .then(res => {
+                let todolist = res.data.data.item;                           // todolist, который создался на серваке и вернулся нам
+                this.props.addTodolist(todolist);
+            });
     };
+
+
 
     componentDidMount() {
         this.restoreState();
@@ -41,6 +45,14 @@ this.props.addTodolist(newTodoList);
     };
 
     restoreState = () => {
+        axios.get("https://social-network.samuraijs.com/api/1.0/todo-lists", {withCredentials: true})
+            .then(res => {
+                this.props.setTodolists(res.data);
+            });
+    };
+
+
+    ___restoreState = () => {
         // объявляем наш стейт стартовый
         let state = this.state;
         // считываем сохранённую ранее строку из localStorage
@@ -63,7 +75,7 @@ this.props.addTodolist(newTodoList);
     render = () => {
         const todolists = this.props
             .todolists
-            .map(tl => <TodoList id={tl.id} title={tl.title} tasks={tl.tasks}/>);
+            .map(tl => <TodoList key={tl.id} id={tl.id} title={tl.title} tasks={tl.tasks}/>)
 
         return (
             <>
@@ -84,24 +96,19 @@ const mapStateToProps = (state) => {
     }
 };
 
-
-
 const mapDispatchToProps = (dispatch) => {
     return {
-        addTodolist: (newTodolist) => {
-            const action = {
-                type: "ADD-TODOLIST",
-                newTodolist: newTodolist
-            };
+        setTodolists: (todolists) => {
+            const action = setTodolistsAC(todolists);
             dispatch(action)
         },
-        addTask(newTask, todolistId) {
-            const action = {type : "ADD-TASK", newTask, todolistId};
-            dispatch(action);
+        addTodolist: (newTodolist) => {
+            const action = addTodolistAC(newTodolist);
+            dispatch(action)
         }
     }
 };
-const ConnectedTodolist = connect(null, mapDispatchToProps)(TodoList);
-const ConnectedApp = connect(mapStateToProps,mapDispatchToProps)(App);
+
+const ConnectedApp = connect(mapStateToProps, mapDispatchToProps)(App);
 export default ConnectedApp;
 
